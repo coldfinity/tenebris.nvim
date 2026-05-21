@@ -29,7 +29,7 @@ Add to your `init.lua` **before** any `require("tenebris")` calls:
 
 ```lua
 vim.pack.add({
-  "https://github.com/yourusername/tenebris.nvim",
+  "https://github.com/coldfinity/tenebris.nvim",
 })
 require("tenebris").load()
 ```
@@ -40,7 +40,7 @@ require("tenebris").load()
 
 ```lua
 {
-  "yourusername/tenebris.nvim",
+  "coldfinity/tenebris.nvim",
   lazy = false,
   priority = 1000,
   config = function()
@@ -53,7 +53,7 @@ require("tenebris").load()
 
 ```lua
 use {
-  "yourusername/tenebris.nvim",
+  "coldfinity/tenebris.nvim",
   config = function()
     require("tenebris").load()
   end
