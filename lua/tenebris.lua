@@ -8,9 +8,11 @@
 local M = {}
 
 local defaults = {
-	transparent = false,
+	transparent     = false,
 	italic_comments = true,
-	bold_keywords = true,
+	bold_keywords   = true,
+	on_colors       = nil,
+	on_highlights   = nil,
 }
 
 M.config = {}
@@ -431,6 +433,18 @@ function M.load()
 	hi("LazyButton", { fg = c.fg1, bg = c.bg3 })
 	hi("LazyButtonActive", { fg = c.bg1, bg = c.purple1, bold = true })
 	hi("LazySpecial", { fg = c.pink1 })
+
+	if type(cfg.on_colors) == "function" then
+		cfg.on_colors(c)
+	end
+
+	if type(cfg.on_highlights) == "function" then
+		local overrides = {}
+		cfg.on_highlights(overrides, c)
+		for group, opts in pairs(overrides) do
+			hi(group, opts)
+		end
+	end
 end
 
 -- Expose palette for integrations (lualine theme, etc.)
