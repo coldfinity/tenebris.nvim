@@ -7,6 +7,18 @@
 
 local M = {}
 
+local defaults = {
+  transparent      = false,
+  italic_comments  = true,
+  bold_keywords    = true,
+}
+
+M.config = {}
+
+function M.setup(opts)
+  M.config = vim.tbl_deep_extend("force", defaults, opts or {})
+end
+
 M.colors = {
   -- Backgrounds
   bg0        = "#0d0d0f",   -- deepest bg (floating wins, borders)
@@ -60,12 +72,20 @@ local function hi(group, opts)
 end
 
 function M.load()
+  local cfg = vim.tbl_deep_extend("force", defaults, M.config)
+
   vim.cmd("highlight clear")
   if vim.fn.exists("syntax_on") then
     vim.cmd("syntax reset")
   end
   vim.g.colors_name = "tenebris"
   vim.o.termguicolors = true
+
+  if cfg.transparent then
+    c.bg0 = "NONE"
+    c.bg1 = "NONE"
+    c.bg2 = "NONE"
+  end
 
   -- =========================================================================
   -- Editor UI
@@ -135,8 +155,8 @@ function M.load()
   -- =========================================================================
   -- Syntax
   -- =========================================================================
-  hi("Comment",         { fg = c.fg2,     italic = true })
-  hi("SpecialComment",  { fg = c.fg2,     italic = true })
+  hi("Comment",         { fg = c.fg2,     italic = cfg.italic_comments })
+  hi("SpecialComment",  { fg = c.fg2,     italic = cfg.italic_comments })
 
   hi("Constant",        { fg = c.pink1 })
   hi("String",          { fg = c.pink1 })
@@ -148,13 +168,13 @@ function M.load()
   hi("Identifier",      { fg = c.fg1 })
   hi("Function",        { fg = c.purple1 })
 
-  hi("Statement",       { fg = c.purple1, bold = true })
-  hi("Conditional",     { fg = c.purple1, bold = true })
-  hi("Repeat",          { fg = c.purple1, bold = true })
+  hi("Statement",       { fg = c.purple1, bold = cfg.bold_keywords })
+  hi("Conditional",     { fg = c.purple1, bold = cfg.bold_keywords })
+  hi("Repeat",          { fg = c.purple1, bold = cfg.bold_keywords })
   hi("Label",           { fg = c.purple2 })
   hi("Operator",        { fg = c.grey1 })
-  hi("Keyword",         { fg = c.purple1, bold = true })
-  hi("Exception",       { fg = c.pink2,   bold = true })
+  hi("Keyword",         { fg = c.purple1, bold = cfg.bold_keywords })
+  hi("Exception",       { fg = c.pink2,   bold = cfg.bold_keywords })
 
   hi("PreProc",         { fg = c.pink2 })
   hi("Include",         { fg = c.purple2 })
@@ -209,14 +229,14 @@ function M.load()
 
   hi("@constructor",              { fg = c.purple2 })
 
-  hi("@keyword",                  { fg = c.purple1, bold = true })
-  hi("@keyword.function",         { fg = c.purple1, bold = true })
+  hi("@keyword",                  { fg = c.purple1, bold = cfg.bold_keywords })
+  hi("@keyword.function",         { fg = c.purple1, bold = cfg.bold_keywords })
   hi("@keyword.operator",         { fg = c.grey1 })
   hi("@keyword.import",           { fg = c.purple2 })
-  hi("@keyword.return",           { fg = c.pink2,   bold = true })
-  hi("@keyword.conditional",      { fg = c.purple1, bold = true })
-  hi("@keyword.repeat",           { fg = c.purple1, bold = true })
-  hi("@keyword.exception",        { fg = c.pink2,   bold = true })
+  hi("@keyword.return",           { fg = c.pink2,   bold = cfg.bold_keywords })
+  hi("@keyword.conditional",      { fg = c.purple1, bold = cfg.bold_keywords })
+  hi("@keyword.repeat",           { fg = c.purple1, bold = cfg.bold_keywords })
+  hi("@keyword.exception",        { fg = c.pink2,   bold = cfg.bold_keywords })
 
   hi("@type",                     { fg = c.purple2 })
   hi("@type.builtin",             { fg = c.purple2, italic = true })
@@ -231,7 +251,7 @@ function M.load()
   hi("@punctuation.delimiter",    { fg = c.grey1 })
   hi("@punctuation.special",      { fg = c.pink2 })
 
-  hi("@comment",                  { fg = c.fg2,     italic = true })
+  hi("@comment",                  { fg = c.fg2,     italic = cfg.italic_comments })
   hi("@comment.todo",             { fg = c.bg1,     bg = c.purple2, bold = true })
   hi("@comment.warning",          { fg = c.bg1,     bg = c.orange,  bold = true })
   hi("@comment.error",            { fg = c.bg1,     bg = c.red,     bold = true })
