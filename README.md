@@ -2,22 +2,24 @@
 
 > *tenebris* — Latin for **darkness, shadow, obscurity**
 
-A dark, moody Neovim colorscheme built around deep charcoal blacks and purposeful purple/pink accents. Designed to feel editorial and precise without being harsh.
+A dark, minimal Neovim colorscheme built around pure blacks and grey highlights. Designed to feel clean and precise without distraction.
 
 ---
 
 ## Palette
 
-| Role | Hex | |
-|------|-----|---|
-| Background (deep) | `#0d0d0f` | ![](https://via.placeholder.com/12/0d0d0f/0d0d0f) |
-| Background (main) | `#111114` | ![](https://via.placeholder.com/12/111114/111114) |
-| Foreground | `#c8c5d4` | |
-| Purple (primary) | `#c09af0` | keywords, functions |
-| Purple (secondary) | `#a07dd8` | types, constructors |
-| Pink (primary) | `#e8a0c0` | strings |
-| Pink (secondary) | `#d07898` | specials, returns |
-| Grey | `#7a7585` | operators, punctuation |
+| Role | Hex |
+|------|-----|
+| Background (deep) | `#070707` |
+| Background (main) | `#0c0c0c` |
+| Background (sidebar) | `#111111` |
+| Cursorline | `#181818` |
+| Foreground | `#c8c8c8` |
+| Foreground (dim) | `#787878` |
+| Accent (light) | `#d8d8d8` |
+| Accent (mid) | `#b0b0b0` |
+| Strings | `#a8a4a0` |
+| Borders | `#222222` |
 
 ---
 
@@ -25,16 +27,11 @@ A dark, moody Neovim colorscheme built around deep charcoal blacks and purposefu
 
 ### [vim.pack](https://neovim.io/doc/user/vim.pack.html) (Neovim 0.12+ built-in)
 
-Add to your `init.lua` **before** any `require("tenebris")` calls:
-
 ```lua
 vim.pack.add({
   "https://github.com/coldfinity/tenebris.nvim",
 })
-require("tenebris").load()
 ```
-
-`vim.pack.add()` installs the plugin on first run and loads it on every subsequent start. No separate setup step needed.
 
 ### [lazy.nvim](https://github.com/folke/lazy.nvim)
 
@@ -44,7 +41,8 @@ require("tenebris").load()
   lazy = false,
   priority = 1000,
   config = function()
-    require("tenebris").load()
+    require("tenebris").setup()
+    vim.cmd("colorscheme tenebris")
   end,
 }
 ```
@@ -55,47 +53,48 @@ require("tenebris").load()
 use {
   "coldfinity/tenebris.nvim",
   config = function()
-    require("tenebris").load()
+    require("tenebris").setup()
+    vim.cmd("colorscheme tenebris")
   end
 }
 ```
 
-### Manual
+---
 
-Copy `lua/tenebris.lua` into your Neovim config:
+## Setup
 
-```
-~/.config/nvim/lua/tenebris.lua
-```
-
-Then in your `init.lua`:
+`setup()` is optional — all options have defaults.
 
 ```lua
-require("tenebris").load()
+require("tenebris").setup({
+  transparent     = false,  -- remove background colors
+  italic_comments = true,   -- italic comments
+  bold_keywords   = true,   -- bold keywords
+
+  on_colors = function(c)
+    -- override palette colors
+    -- c.purple1 = "#ffffff"
+  end,
+
+  on_highlights = function(hl, c)
+    -- override specific highlight groups
+    -- hl.Comment = { fg = c.fg3, italic = false }
+  end,
+})
+
+vim.cmd("colorscheme tenebris")
 ```
 
 ---
 
-## Lualine Integration
+## Lualine
+
+A lualine theme is included. Set `theme = "tenebris"` in your lualine config:
 
 ```lua
-local colors = require("tenebris").get_colors()
-
-require("lualine").setup {
-  options = {
-    theme = {
-      normal   = { a = { fg = colors.bg1, bg = colors.purple1, gui = "bold" },
-                   b = { fg = colors.fg2, bg = colors.bg2 },
-                   c = { fg = colors.fg3, bg = colors.bg1 } },
-      insert   = { a = { fg = colors.bg1, bg = colors.pink1,   gui = "bold" } },
-      visual   = { a = { fg = colors.bg1, bg = colors.purple2, gui = "bold" } },
-      command  = { a = { fg = colors.bg1, bg = colors.pink2,   gui = "bold" } },
-      inactive = { a = { fg = colors.fg3, bg = colors.bg0 },
-                   b = { fg = colors.fg3, bg = colors.bg0 },
-                   c = { fg = colors.fg3, bg = colors.bg0 } },
-    },
-  },
-}
+require("lualine").setup({
+  options = { theme = "tenebris" }
+})
 ```
 
 ---
