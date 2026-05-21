@@ -23,44 +23,44 @@ end
 
 M.colors = {
 	-- Backgrounds
-	bg0 = "#0d0d0f", -- deepest bg (floating wins, borders)
-	bg1 = "#111114", -- main editor bg
-	bg2 = "#17171b", -- sidebar, statusline bg
-	bg3 = "#1e1e24", -- cursorline, selection bg
-	bg4 = "#26262e", -- visual selection, inactive highlights
+	bg0 = "#070707", -- deepest bg (floating wins, borders)
+	bg1 = "#0c0c0c", -- main editor bg
+	bg2 = "#111111", -- sidebar, statusline bg
+	bg3 = "#181818", -- cursorline, selection bg
+	bg4 = "#202020", -- visual selection, inactive highlights
 
 	-- Foregrounds
-	fg0 = "#e2e0e8", -- brightest text (unused/rare)
-	fg1 = "#c8c5d4", -- default text
-	fg2 = "#9994aa", -- comments, subtle text
-	fg3 = "#5e5a6e", -- line numbers, very muted
-	fg4 = "#3a3745", -- invisible/decorative
+	fg0 = "#ebebeb", -- brightest text
+	fg1 = "#c8c8c8", -- default text
+	fg2 = "#787878", -- comments, subtle text
+	fg3 = "#484848", -- line numbers, very muted
+	fg4 = "#282828", -- invisible/decorative
 
-	-- Accents: Purple family
-	purple1 = "#c09af0", -- keywords, main purple
-	purple2 = "#a07dd8", -- types, slightly deeper
-	purple3 = "#7c5bbf", -- muted purple, inactive things
+	-- Light greys (keywords, functions)
+	purple1 = "#d8d8d8", -- near-white grey
+	purple2 = "#b0b0b0", -- medium grey
+	purple3 = "#686868", -- muted grey
 
-	-- Accents: Pink family
-	pink1 = "#e8a0c0", -- strings, warm pink
-	pink2 = "#d07898", -- special, deeper pink
-	pink3 = "#a85878", -- error underlines, dark pink
+	-- Warm greys (strings, special)
+	pink1 = "#a8a4a0", -- warm grey
+	pink2 = "#888480", -- deeper warm grey
+	pink3 = "#686460", -- dark warm grey
 
 	-- Neutrals
-	grey1 = "#7a7585", -- operators, punctuation
-	grey2 = "#524e60", -- muted operators
-	grey3 = "#2e2b38", -- borders, splits
+	grey1 = "#606060", -- operators, punctuation
+	grey2 = "#3c3c3c", -- muted operators
+	grey3 = "#222222", -- borders, splits
 
 	-- Semantic
-	red = "#e07878", -- errors
+	red    = "#e07878", -- errors
 	orange = "#d4956a", -- warnings
 	yellow = "#c8b87a", -- hints
-	green = "#88b894", -- ok/added
-	cyan = "#80b8c8", -- info, links
+	green  = "#88b894", -- ok/added
+	cyan   = "#80b8c8", -- info, links
 
 	-- Git
-	git_add = "#6a9f76",
-	git_change = "#8878b8",
+	git_add    = "#6a9f76",
+	git_change = "#888888",
 	git_delete = "#a85858",
 
 	none = "NONE",
@@ -312,10 +312,10 @@ function M.load()
 	-- =========================================================================
 	-- Git
 	-- =========================================================================
-	hi("DiffAdd", { fg = c.git_add, bg = "#0f1f14" })
-	hi("DiffChange", { fg = c.git_change, bg = "#141224" })
-	hi("DiffDelete", { fg = c.git_delete, bg = "#1f0f10" })
-	hi("DiffText", { fg = c.fg1, bg = "#1e1640" })
+	hi("DiffAdd", { fg = c.git_add, bg = "#0e1810" })
+	hi("DiffChange", { fg = c.git_change, bg = "#161616" })
+	hi("DiffDelete", { fg = c.git_delete, bg = "#1a0e0e" })
+	hi("DiffText", { fg = c.fg1, bg = "#202020" })
 
 	hi("GitSignsAdd", { fg = c.git_add })
 	hi("GitSignsChange", { fg = c.git_change })
