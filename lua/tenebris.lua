@@ -171,7 +171,7 @@ function M.load()
 	hi("Float", { fg = c.warm2 })
 
 	hi("Identifier", { fg = c.fg1 })
-	hi("Function", { fg = c.accent1 })
+	hi("Function", { fg = c.fg0 })
 
 	hi("Statement", { fg = c.fg0, bold = cfg.bold_keywords })
 	hi("Conditional", { fg = c.fg0, bold = cfg.bold_keywords })
@@ -225,12 +225,12 @@ function M.load()
 	hi("@number.float", { fg = c.warm2 })
 	hi("@boolean", { fg = c.accent1, bold = true })
 
-	hi("@function", { fg = c.accent1 })
+	hi("@function", { fg = c.fg0 })
 	hi("@function.builtin", { fg = c.accent2 })
-	hi("@function.call", { fg = c.accent1 })
+	hi("@function.call", { fg = c.fg0 })
 	hi("@function.macro", { fg = c.warm2 })
-	hi("@function.method", { fg = c.accent1 })
-	hi("@function.method.call", { fg = c.accent1 })
+	hi("@function.method", { fg = c.fg0 })
+	hi("@function.method.call", { fg = c.fg0 })
 
 	hi("@constructor", { fg = c.accent2 })
 
