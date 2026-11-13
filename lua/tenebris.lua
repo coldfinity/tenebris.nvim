@@ -21,7 +21,7 @@ function M.setup(opts)
 	M.config = vim.tbl_deep_extend("force", defaults, opts or {})
 end
 
-M.colors = {
+local dark = {
 	-- Backgrounds
 	bg0 = "#070707", -- deepest bg (floating wins, borders)
 	bg1 = "#0c0c0c", -- main editor bg
@@ -66,8 +66,104 @@ M.colors = {
 	git_change = "#888888",
 	git_delete = "#a85858",
 
+	-- Derived (pre-blended over bg1, as in the vscode theme)
+	cursor = "#c8c8c8", -- cursor block
+	search = "#272429", -- search match
+	search_cur = "#4e4e4e", -- current search match
+	paren_fg = "#e7d7ed", -- matching bracket
+	paren_bg = "#201d22",
+	ref_weak = "#1c1a1d", -- LSP reference / word highlight
+	ref_strong = "#28252a", -- LSP write reference
+	diff_add = "#0e1810",
+	diff_change = "#161616",
+	diff_delete = "#1a0e0e",
+	diff_text = "#202020",
+
+	-- Rainbow brackets
+	rb1 = "#b99ac8",
+	rb2 = "#d5ae87",
+	rb3 = "#86bdb0",
+	rb4 = "#91a7d8",
+	rb5 = "#cb91a4",
+	rb6 = "#ced0d5",
+
 	none = "NONE",
 }
+
+local light = {
+	-- Backgrounds
+	bg0 = "#e5e4e9", -- floating wins, inactive tabs
+	bg1 = "#f2f2f2", -- main editor bg
+	bg2 = "#ebeaee", -- sidebar, statusline bg
+	bg3 = "#ebebeb", -- cursorline
+	bg4 = "#d3d3d3", -- selection
+
+	-- Foregrounds
+	fg0 = "#262626",
+	fg1 = "#3d3d3d",
+	fg2 = "#707070",
+	fg3 = "#a0a0a0",
+	fg4 = "#c4c4c4",
+
+	accent1 = "#2e2e2e",
+	accent2 = "#4a4a4a",
+	accent3 = "#8a8a8a",
+
+	purple = "#7b5d8e",
+
+	warm1 = "#58544f",
+	warm2 = "#6e6a66",
+	warm3 = "#8a8680",
+
+	grey1 = "#6a6a6a",
+	grey2 = "#b8b8b8",
+	grey3 = "#cfcdd5",
+
+	red = "#c04646",
+	orange = "#b8682e",
+	yellow = "#8a7520",
+	green = "#3f7f52",
+	cyan = "#2f7f96",
+
+	git_add = "#3f7f52",
+	git_change = "#6a6a6a",
+	git_delete = "#a84444",
+
+	cursor = "#ae98b8",
+	search = "#ded9e1",
+	search_cur = "#afafaf",
+	paren_fg = "#4a2f5a",
+	paren_bg = "#e6e1e8",
+	ref_weak = "#eae7eb",
+	ref_strong = "#e3dfe5",
+	diff_add = "#e3f2e6",
+	diff_change = "#e8e8e8",
+	diff_delete = "#f6e1e1",
+	diff_text = "#d3d3d3",
+
+	rb1 = "#8a5fa0",
+	rb2 = "#a06a2e",
+	rb3 = "#2f8070",
+	rb4 = "#4a6aa8",
+	rb5 = "#a84a68",
+	rb6 = "#6a6e78",
+
+	none = "NONE",
+}
+
+M.palettes = { dark = dark, light = light }
+
+-- Active palette; mutated in place so integrations holding a reference stay valid
+M.colors = {}
+
+local function apply_palette(name)
+	for k in pairs(M.colors) do
+		M.colors[k] = nil
+	end
+	for k, v in pairs(M.palettes[name]) do
+		M.colors[k] = v
+	end
+end
 
 local c = M.colors
 
@@ -79,17 +175,30 @@ end
 function M.load()
 	local cfg = vim.tbl_deep_extend("force", defaults, M.config)
 
+	local style = vim.o.background == "light" and "light" or "dark"
+	apply_palette(style)
+
 	vim.cmd("highlight clear")
 	if vim.fn.exists("syntax_on") then
 		vim.cmd("syntax reset")
 	end
 	vim.g.colors_name = "tenebris"
 	vim.o.termguicolors = true
+	vim.o.background = style
 
 	if cfg.transparent then
 		c.bg0 = "NONE"
 		c.bg1 = "NONE"
 		c.bg2 = "NONE"
+	end
+
+	-- Terminal ANSI palette (same mapping as the vscode themes)
+	local ansi = {
+		c.bg0, c.red, c.green, c.yellow, c.cyan, c.purple, c.cyan, c.fg1,
+		c.fg3, c.red, c.green, c.yellow, c.cyan, c.purple, c.cyan, c.fg0,
+	}
+	for i, color in ipairs(ansi) do
+		vim.g["terminal_color_" .. (i - 1)] = color
 	end
 
 	-- =========================================================================
@@ -101,7 +210,7 @@ function M.load()
 	hi("FloatBorder", { fg = c.grey3, bg = c.bg0 })
 	hi("FloatTitle", { fg = c.accent1, bg = c.bg0, bold = true })
 
-	hi("Cursor", { fg = c.bg1, bg = c.fg1 })
+	hi("Cursor", { fg = c.bg1, bg = c.cursor })
 	hi("CursorLine", { bg = c.bg3 })
 	hi("CursorColumn", { bg = c.bg3 })
 	hi("CursorLineNr", { fg = c.accent2, bg = c.none })
@@ -111,10 +220,10 @@ function M.load()
 	hi("Visual", { bg = c.bg4 })
 	hi("VisualNOS", { bg = c.bg4 })
 	-- vscode find match colours, pre-blended over bg1
-	hi("Search", { bg = "#272429" })
-	hi("IncSearch", { bg = "#4e4e4e" })
-	hi("CurSearch", { bg = "#4e4e4e" })
-	hi("Substitute", { bg = "#4e4e4e" })
+	hi("Search", { bg = c.search })
+	hi("IncSearch", { bg = c.search_cur })
+	hi("CurSearch", { bg = c.search_cur })
+	hi("Substitute", { bg = c.search_cur })
 
 	hi("StatusLine", { fg = c.fg2, bg = c.bg2 })
 	hi("StatusLineNC", { fg = c.fg2, bg = c.bg2 })
@@ -140,7 +249,7 @@ function M.load()
 	hi("Folded", { fg = c.fg3, bg = c.bg3 })
 	hi("FoldColumn", { fg = c.fg3, bg = c.none })
 
-	hi("MatchParen", { fg = "#e7d7ed", bg = "#201d22" })
+	hi("MatchParen", { fg = c.paren_fg, bg = c.paren_bg })
 
 	hi("Directory", { fg = c.accent1 })
 	hi("Title", { fg = c.accent1, bold = true })
@@ -206,83 +315,128 @@ function M.load()
 	hi("Todo", { fg = c.accent2, bg = c.none, bold = true })
 
 	-- =========================================================================
-	-- Treesitter
+	-- Treesitter (every group from :h treesitter-highlight-groups)
 	-- =========================================================================
+	local kw = { fg = c.fg0, bold = cfg.bold_keywords }
+	local function kwhi(group, extra)
+		hi(group, vim.tbl_extend("force", kw, extra or {}))
+	end
+
+	-- Variables
 	hi("@variable", { fg = c.fg1 })
 	hi("@variable.builtin", { fg = c.accent2, italic = true })
 	hi("@variable.parameter", { fg = c.fg1, italic = true })
+	hi("@variable.parameter.builtin", { fg = c.accent2, italic = true })
 	hi("@variable.member", { fg = c.fg1 })
 
+	-- Constants
 	hi("@constant", { fg = c.purple })
 	hi("@constant.builtin", { fg = c.purple, bold = true })
 	hi("@constant.macro", { fg = c.purple })
 
+	-- Modules and labels
+	hi("@module", { fg = c.accent2 })
+	hi("@module.builtin", { fg = c.accent2 })
+	hi("@label", { fg = c.accent2 })
+
+	-- Strings and characters
 	hi("@string", { fg = c.purple })
+	hi("@string.documentation", { fg = c.purple })
+	hi("@string.regexp", { fg = c.purple, italic = true })
 	hi("@string.escape", { fg = c.purple })
 	hi("@string.special", { fg = c.purple })
-	hi("@string.regexp", { fg = c.purple, italic = true })
+	hi("@string.special.symbol", { fg = c.purple })
+	hi("@string.special.path", { fg = c.purple })
+	hi("@string.special.url", { fg = c.cyan, underline = true })
+	hi("@character", { fg = c.purple })
+	hi("@character.special", { fg = c.purple })
 
+	-- Literals
+	hi("@boolean", { fg = c.accent1, bold = true })
 	hi("@number", { fg = c.warm2 })
 	hi("@number.float", { fg = c.warm2 })
-	hi("@boolean", { fg = c.accent1, bold = true })
 
+	-- Types
+	hi("@type", { fg = c.accent2 })
+	hi("@type.builtin", { fg = c.accent2 })
+	hi("@type.definition", { fg = c.accent2 })
+	hi("@type.qualifier", { fg = c.accent1 })
+
+	-- Attributes and properties
+	hi("@attribute", { fg = c.warm2 })
+	hi("@attribute.builtin", { fg = c.warm2 })
+	hi("@property", { fg = c.fg1 })
+
+	-- Functions
 	hi("@function", { fg = c.fg0 })
 	hi("@function.builtin", { fg = c.accent2 })
 	hi("@function.call", { fg = c.fg0 })
 	hi("@function.macro", { fg = c.warm2 })
 	hi("@function.method", { fg = c.fg0 })
 	hi("@function.method.call", { fg = c.fg0 })
-
 	hi("@constructor", { fg = c.accent2 })
+	hi("@operator", { fg = c.grey1 })
 
-	hi("@keyword", { fg = c.fg0, bold = cfg.bold_keywords })
-	hi("@keyword.function", { fg = c.fg0, bold = cfg.bold_keywords })
-	hi("@keyword.operator", { fg = c.fg0, bold = cfg.bold_keywords })
-	hi("@keyword.type", { fg = c.fg0, bold = cfg.bold_keywords })
+	-- Keywords
+	kwhi("@keyword")
+	kwhi("@keyword.coroutine")
+	kwhi("@keyword.function")
+	kwhi("@keyword.operator") -- word-like operators (and, or, not, sizeof)
+	kwhi("@keyword.type") -- struct, enum, class
+	kwhi("@keyword.repeat")
+	kwhi("@keyword.return")
+	kwhi("@keyword.debug")
+	kwhi("@keyword.exception")
+	kwhi("@keyword.conditional")
+	hi("@keyword.conditional.ternary", { fg = c.grey1 })
 	hi("@keyword.modifier", { fg = c.accent1 })
 	hi("@keyword.import", { fg = c.accent2 })
-	hi("@keyword.return", { fg = c.fg0, bold = cfg.bold_keywords })
-	hi("@keyword.conditional", { fg = c.fg0, bold = cfg.bold_keywords })
-	hi("@keyword.repeat", { fg = c.fg0, bold = cfg.bold_keywords })
-	hi("@keyword.exception", { fg = c.fg0, bold = cfg.bold_keywords })
+	hi("@keyword.directive", { fg = c.accent2 })
+	hi("@keyword.directive.define", { fg = c.accent2 })
 
-	hi("@type", { fg = c.accent2 })
-	hi("@type.builtin", { fg = c.accent2 })
-	hi("@type.qualifier", { fg = c.accent1 })
-	hi("@type.definition", { fg = c.accent2 })
-
-	hi("@attribute", { fg = c.warm2 })
-	hi("@property", { fg = c.fg1 })
-
-	hi("@operator", { fg = c.grey1 })
-	hi("@punctuation.bracket", { fg = c.grey1 })
+	-- Punctuation
 	hi("@punctuation.delimiter", { fg = c.grey1 })
+	hi("@punctuation.bracket", { fg = c.grey1 })
 	hi("@punctuation.special", { fg = c.warm2 })
 
+	-- Comments
 	hi("@comment", { fg = c.fg2, italic = cfg.italic_comments })
-	hi("@comment.todo", { fg = c.bg1, bg = c.accent2, bold = true })
-	hi("@comment.warning", { fg = c.bg1, bg = c.orange, bold = true })
+	hi("@comment.documentation", { fg = c.fg2, italic = cfg.italic_comments })
 	hi("@comment.error", { fg = c.bg1, bg = c.red, bold = true })
+	hi("@comment.warning", { fg = c.bg1, bg = c.orange, bold = true })
+	hi("@comment.todo", { fg = c.accent2, bold = true })
 	hi("@comment.note", { fg = c.bg1, bg = c.cyan, bold = true })
 
-	hi("@tag", { fg = c.accent1 })
-	hi("@tag.attribute", { fg = c.warm1 })
-	hi("@tag.delimiter", { fg = c.accent1 })
-
-	hi("@markup.heading", { fg = c.accent1, bold = true })
-	hi("@markup.heading.1", { fg = c.accent1, bold = true })
-	hi("@markup.heading.2", { fg = c.accent1, bold = true })
-	hi("@markup.heading.3", { fg = c.accent1, bold = true })
-	hi("@markup.italic", { fg = c.fg1, italic = true })
+	-- Markup
 	hi("@markup.strong", { fg = c.fg0, bold = true })
+	hi("@markup.italic", { fg = c.fg1, italic = true })
+	hi("@markup.strikethrough", { fg = c.fg2, strikethrough = true })
+	hi("@markup.underline", { underline = true })
+	hi("@markup.heading", { fg = c.accent1, bold = true })
+	for i = 1, 6 do
+		hi("@markup.heading." .. i, { fg = c.accent1, bold = true })
+	end
+	hi("@markup.quote", { fg = c.fg2, italic = true })
+	hi("@markup.math", { fg = c.warm2 })
 	hi("@markup.link", { fg = c.cyan, underline = true })
+	hi("@markup.link.label", { fg = c.cyan })
 	hi("@markup.link.url", { fg = c.cyan, underline = true })
 	hi("@markup.raw", { fg = c.purple })
+	hi("@markup.raw.block", { fg = c.purple })
 	hi("@markup.list", { fg = c.accent2 })
+	hi("@markup.list.checked", { fg = c.accent2 })
+	hi("@markup.list.unchecked", { fg = c.fg3 })
 
+	-- Diff
 	hi("@diff.plus", { fg = c.git_add })
 	hi("@diff.minus", { fg = c.git_delete })
 	hi("@diff.delta", { fg = c.git_change })
+
+	-- Tags
+	hi("@tag", { fg = c.accent1 })
+	hi("@tag.builtin", { fg = c.accent1 })
+	hi("@tag.attribute", { fg = c.warm1 })
+	hi("@tag.delimiter", { fg = c.accent1 })
 
 	-- =========================================================================
 	-- LSP
@@ -308,9 +462,9 @@ function M.load()
 	hi("DiagnosticSignInfo", { fg = c.cyan })
 	hi("DiagnosticSignHint", { fg = c.accent2 })
 
-	hi("LspReferenceText", { bg = "#1c1a1d" })
-	hi("LspReferenceRead", { bg = "#1c1a1d" })
-	hi("LspReferenceWrite", { bg = "#28252a" })
+	hi("LspReferenceText", { bg = c.ref_weak })
+	hi("LspReferenceRead", { bg = c.ref_weak })
+	hi("LspReferenceWrite", { bg = c.ref_strong })
 	hi("LspSignatureActiveParameter", { fg = c.warm1, bold = true })
 	hi("LspCodeLens", { fg = c.fg3 })
 	hi("LspInlayHint", { fg = c.fg3, bg = c.bg2 })
@@ -318,136 +472,19 @@ function M.load()
 	-- =========================================================================
 	-- Git
 	-- =========================================================================
-	hi("DiffAdd", { fg = c.git_add, bg = "#0e1810" })
-	hi("DiffChange", { fg = c.git_change, bg = "#161616" })
-	hi("DiffDelete", { fg = c.git_delete, bg = "#1a0e0e" })
-	hi("DiffText", { fg = c.fg1, bg = "#202020" })
+	hi("DiffAdd", { fg = c.git_add, bg = c.diff_add })
+	hi("DiffChange", { fg = c.git_change, bg = c.diff_change })
+	hi("DiffDelete", { fg = c.git_delete, bg = c.diff_delete })
+	hi("DiffText", { fg = c.fg1, bg = c.diff_text })
 
 	hi("GitSignsAdd", { fg = c.git_add })
 	hi("GitSignsChange", { fg = c.git_change })
 	hi("GitSignsDelete", { fg = c.git_delete })
 
 	-- =========================================================================
-	-- Plugins
+	-- Plugins (lua/tenebris/plugins.lua)
 	-- =========================================================================
-
-	-- Telescope
-	hi("TelescopeBorder", { fg = c.grey3, bg = c.bg0 })
-	hi("TelescopeNormal", { fg = c.fg1, bg = c.bg0 })
-	hi("TelescopePromptBorder", { fg = c.accent3, bg = c.bg0 })
-	hi("TelescopePromptNormal", { fg = c.fg0, bg = c.bg0 })
-	hi("TelescopePromptPrefix", { fg = c.accent1, bg = c.bg0 })
-	hi("TelescopePromptTitle", { fg = c.bg0, bg = c.accent1, bold = true })
-	hi("TelescopePreviewTitle", { fg = c.bg0, bg = c.warm2, bold = true })
-	hi("TelescopeResultsTitle", { fg = c.fg3, bg = c.bg0 })
-	hi("TelescopeSelection", { bg = c.bg4 })
-	hi("TelescopeSelectionCaret", { fg = c.warm1, bg = c.bg4 })
-	hi("TelescopeMatching", { fg = c.purple })
-
-	-- nvim-tree
-	hi("NvimTreeNormal", { fg = c.fg1, bg = c.bg2 })
-	hi("NvimTreeRootFolder", { fg = c.accent1, bold = true })
-	hi("NvimTreeFolderIcon", { fg = c.accent2 })
-	hi("NvimTreeFolderName", { fg = c.fg1 })
-	hi("NvimTreeOpenedFolderName", { fg = c.accent1 })
-	hi("NvimTreeGitDirty", { fg = c.git_change })
-	hi("NvimTreeGitNew", { fg = c.git_add })
-	hi("NvimTreeGitDeleted", { fg = c.git_delete })
-	hi("NvimTreeIndentMarker", { fg = c.fg4 })
-	hi("NvimTreeWinSeparator", { fg = c.grey3 })
-
-	-- neo-tree
-	hi("NeoTreeNormal", { fg = c.fg1, bg = c.bg2 })
-	hi("NeoTreeNormalNC", { fg = c.fg1, bg = c.bg2 })
-	hi("NeoTreeRootName", { fg = c.accent1, bold = true })
-	hi("NeoTreeDirectoryIcon", { fg = c.accent2 })
-	hi("NeoTreeDirectoryName", { fg = c.fg1 })
-	hi("NeoTreeGitModified", { fg = c.git_change })
-	hi("NeoTreeGitAdded", { fg = c.git_add })
-	hi("NeoTreeGitDeleted", { fg = c.git_delete })
-	hi("NeoTreeWinSeparator", { fg = c.grey3 })
-	hi("NeoTreeDotfile", { fg = c.fg3 })
-
-	-- Which-key
-	hi("WhichKey", { fg = c.accent1 })
-	hi("WhichKeyGroup", { fg = c.warm1 })
-	hi("WhichKeyDesc", { fg = c.fg1 })
-	hi("WhichKeySeparator", { fg = c.fg3 })
-	hi("WhichKeyFloat", { bg = c.bg0 })
-	hi("WhichKeyBorder", { fg = c.grey3, bg = c.bg0 })
-
-	-- indent-blankline
-	hi("IblIndent", { fg = c.fg4 })
-	hi("IblScope", { fg = c.accent3 })
-
-	-- nvim-cmp
-	hi("CmpItemAbbr", { fg = c.fg1 })
-	hi("CmpItemAbbrMatch", { fg = c.purple })
-	hi("CmpItemAbbrMatchFuzzy", { fg = c.purple })
-	hi("CmpItemAbbrDeprecated", { fg = c.fg3, strikethrough = true })
-	hi("CmpItemKind", { fg = c.accent2 })
-	hi("CmpItemMenu", { fg = c.fg3 })
-
-	-- Noice / notify
-	hi("NoiceCmdline", { fg = c.fg1, bg = c.bg0 })
-	hi("NoiceCmdlineIcon", { fg = c.accent1 })
-	hi("NoiceCmdlineBorder", { fg = c.grey3 })
-	hi("NotifyERRORBorder", { fg = c.red })
-	hi("NotifyWARNBorder", { fg = c.orange })
-	hi("NotifyINFOBorder", { fg = c.cyan })
-	hi("NotifyDEBUGBorder", { fg = c.fg3 })
-	hi("NotifyERRORTitle", { fg = c.red, bold = true })
-	hi("NotifyWARNTitle", { fg = c.orange, bold = true })
-	hi("NotifyINFOTitle", { fg = c.cyan, bold = true })
-
-	-- Lualine (semantic token groups, actual lualine config separate)
-	hi("LualineNormalA", { fg = c.bg1, bg = c.accent1, bold = true })
-	hi("LualineInsertA", { fg = c.bg1, bg = c.warm1, bold = true })
-	hi("LualineVisualA", { fg = c.bg1, bg = c.accent2, bold = true })
-	hi("LualineCommandA", { fg = c.bg1, bg = c.warm2, bold = true })
-
-	-- mini.nvim
-	hi("MiniStatuslineModeNormal", { fg = c.bg1, bg = c.accent1, bold = true })
-	hi("MiniStatuslineModeInsert", { fg = c.bg1, bg = c.warm1, bold = true })
-	hi("MiniStatuslineModeVisual", { fg = c.bg1, bg = c.accent2, bold = true })
-	hi("MiniStatuslineModeCommand", { fg = c.bg1, bg = c.warm2, bold = true })
-	hi("MiniStatuslineModeOther", { fg = c.bg1, bg = c.grey1, bold = true })
-	hi("MiniStatuslineFilename", { fg = c.fg2, bg = c.bg2 })
-	hi("MiniStatuslineFileinfo", { fg = c.fg3, bg = c.bg2 })
-	hi("MiniStatuslineInactive", { fg = c.fg3, bg = c.bg0 })
-	hi("MiniCursorword", { bg = c.bg4, underline = true })
-	hi("MiniCursorwordCurrent", { bg = c.bg4, underline = true })
-	hi("MiniJump", { fg = c.warm1, bold = true, underline = true })
-	hi("MiniJump2dSpot", { fg = c.warm1, bold = true })
-
-	-- rainbow-delimiters.nvim (vscode bracket pair colours)
-	hi("RainbowDelimiterRed", { fg = "#b99ac8" })
-	hi("RainbowDelimiterYellow", { fg = "#d5ae87" })
-	hi("RainbowDelimiterBlue", { fg = "#86bdb0" })
-	hi("RainbowDelimiterOrange", { fg = "#91a7d8" })
-	hi("RainbowDelimiterGreen", { fg = "#cb91a4" })
-	hi("RainbowDelimiterViolet", { fg = "#ced0d5" })
-	hi("RainbowDelimiterCyan", { fg = "#b99ac8" })
-
-	-- Flash.nvim
-	hi("FlashLabel", { fg = c.bg1, bg = c.warm1, bold = true })
-	hi("FlashMatch", { fg = c.bg1, bg = c.accent2 })
-	hi("FlashCurrent", { fg = c.bg1, bg = c.accent1, bold = true })
-
-	-- Snacks.nvim
-	hi("SnacksPickerBorder", { fg = c.grey3, bg = c.bg0 })
-	hi("SnacksPickerMatch", { fg = c.purple })
-	hi("SnacksDashboardHeader", { fg = c.accent1 })
-	hi("SnacksDashboardFooter", { fg = c.fg3, italic = true })
-	hi("SnacksDashboardKey", { fg = c.warm1 })
-	hi("SnacksDashboardDesc", { fg = c.fg2 })
-	hi("SnacksDashboardIcon", { fg = c.accent2 })
-
-	-- Lazy.nvim
-	hi("LazyH1", { fg = c.accent1, bold = true })
-	hi("LazyButton", { fg = c.fg1, bg = c.bg3 })
-	hi("LazyButtonActive", { fg = c.bg1, bg = c.accent1, bold = true })
-	hi("LazySpecial", { fg = c.warm1 })
+	require("tenebris.plugins")(hi, c, cfg)
 
 	if type(cfg.on_colors) == "function" then
 		cfg.on_colors(c)
@@ -461,6 +498,17 @@ function M.load()
 		end
 	end
 end
+
+-- Re-apply the theme when 'background' is toggled while tenebris is active
+vim.api.nvim_create_autocmd("OptionSet", {
+	group = vim.api.nvim_create_augroup("tenebris_background", { clear = true }),
+	pattern = "background",
+	callback = function()
+		if vim.g.colors_name == "tenebris" then
+			vim.schedule(M.load)
+		end
+	end,
+})
 
 -- Expose palette for integrations (lualine theme, etc.)
 function M.get_colors()
